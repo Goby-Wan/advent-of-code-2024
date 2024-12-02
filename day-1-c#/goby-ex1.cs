@@ -49,6 +49,7 @@ namespace AdventOfCode
             return result;
         }
 
+        // Préparation des listes
         private void ParseInput(string[] input)
         {
             foreach (string line in input)
