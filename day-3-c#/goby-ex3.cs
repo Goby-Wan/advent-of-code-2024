@@ -6,12 +6,9 @@ namespace AdventOfCode
   class Day_03
   {
     private readonly string _input;
-    private List<(int, int)> _listOperations;
     public Day_03()
     {
       _input = File.ReadAllText("input/day_03/input-ex3.txt");
-      _listOperations = new List<(int, int)>();
-      ParseInput(_input);
 
       Console.WriteLine("Résultat de la partie 1 : " + PartOne());
       Console.WriteLine("Résultat de la partie 2 : " + PartTwo());
@@ -21,9 +18,10 @@ namespace AdventOfCode
     {
       int result = 0;
 
-      foreach ((int, int) operation in _listOperations)
+      MatchCollection lineParsed = Regex.Matches(_input, "mul\\((\\d+)\\,(\\d+)\\)");
+      foreach (Match line in lineParsed)
       {
-        result += operation.Item1 * operation.Item2;
+        result += Int32.Parse(line.Groups[1].Value) * Int32.Parse(line.Groups[2].Value);
       }
 
       return result;
@@ -32,19 +30,28 @@ namespace AdventOfCode
     private int PartTwo()
     {
       int result = 0;
+      bool doOperation = true;
+
+      MatchCollection lineParsed = Regex.Matches(_input, "mul\\((\\d+)\\,(\\d+)\\)|do\\(\\)|don\\'t\\(\\)");
+      foreach (Match line in lineParsed)
+      {
+        if (line.Groups[0].Value == "do()")
+        {
+          doOperation = true;
+        }
+        else if (line.Groups[0].Value == "don't()")
+        {
+          doOperation = false;
+        }
+        else if (doOperation)
+        {
+          result += Int32.Parse(line.Groups[1].Value) * Int32.Parse(line.Groups[2].Value);
+        }
+      }
 
       return result;
     }
 
-
-    private void ParseInput(string input)
-    {
-      MatchCollection lineParsed = Regex.Matches(input, "mul\\((\\d+)\\,(\\d+)\\)");
-      foreach (Match line in lineParsed)
-      {
-        _listOperations.Add((Int32.Parse(line.Groups[1].Value), Int32.Parse(line.Groups[2].Value)));
-      }
-    }
 
   }
 }
