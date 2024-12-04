@@ -67,6 +67,50 @@ namespace AdventOfCode
     {
       int result = 0;
 
+      for (int y = 1; y < _crossword.Length - 1; y++)
+      {
+        for (int x = 1; x < _crossword[y].Length - 1; x++)
+        {
+          if (_crossword[y][x] != 'A')
+          {
+            continue;
+          }
+          else
+          {
+            if (_crossword[y - 1][x - 1] == 'M')
+            {
+              // MM SS
+              if (_crossword[y - 1][x + 1] == 'M' && _crossword[y + 1][x - 1] == 'S' && _crossword[y + 1][x + 1] == 'S')
+              {
+                result++;
+                continue;
+              }
+              // MS MS
+              if (_crossword[y - 1][x + 1] == 'S' && _crossword[y + 1][x - 1] == 'M' && _crossword[y + 1][x + 1] == 'S')
+              {
+                result++;
+                continue;
+              }
+            }
+            else if (_crossword[y - 1][x - 1] == 'S')
+            {
+              // SM SM
+              if (_crossword[y - 1][x + 1] == 'M' && _crossword[y + 1][x - 1] == 'S' && _crossword[y + 1][x + 1] == 'M')
+              {
+                result++;
+                continue;
+              }
+              // SS MM
+              if (_crossword[y - 1][x + 1] == 'S' && _crossword[y + 1][x - 1] == 'M' && _crossword[y + 1][x + 1] == 'M')
+              {
+                result++;
+                continue;
+              }
+            }
+          }
+        }
+      }
+
       return result;
     }
 
