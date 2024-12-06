@@ -8,15 +8,16 @@ namespace AdventOfCode
     private readonly string[] _input;
     private char[][] _originLaby;
     private char[][] _laby;
-
-    // Direction : 0 = Haut, 1 = Droite, 2 = Bas, 3 = Gauche
-    private (int x, int y, int dir) _pos;
+    private (int x, int y, int dir) _originalPos;
+    private HashSet<(int x, int y)> _obstructions;
 
     public Day_06()
     {
       _input = File.ReadAllLines("input/day_06/input-ex6.txt");
+      _laby = new char[_input.Length][];
       ParseInput(_input);
-      _originLaby = _laby;
+      _originLaby = CloneLaby(_laby);
+      _obstructions = new HashSet<(int x, int y)>();
 
       Console.WriteLine("Résultat de la partie 1 : " + PartOne());
       Console.WriteLine("Résultat de la partie 2 : " + PartTwo());
@@ -26,8 +27,9 @@ namespace AdventOfCode
     {
       int result = 0;
       int moves = 0;
-      while (Move()) { moves++; }
-      _laby[_pos.y][_pos.x] = 'X';
+      (int x, int y, int dir) currentPos = _originalPos;
+      while (Move(ref currentPos)) { moves++; }
+      _laby[currentPos.y][currentPos.x] = 'X';
 
       for (int y = 0; y < _laby.Length; y++)
       {
@@ -42,34 +44,58 @@ namespace AdventOfCode
 
     private int PartTwo()
     {
-      int result = 0;
+      for (int y = 0; y < _laby.Length; y++)
+      {
+        for (int x = 0; x < _laby[y].Length; x++)
+        {
+          SimulateObs((x, y));
+        }
+      }
 
-      return result;
+      return _obstructions.Count();
+    }
+    private Boolean SimulateObs((int x, int y) pos)
+    {
+      (int x, int y, int dir) currentPos = (_originalPos.x, _originalPos.y, _originalPos.dir);
+      _laby = CloneLaby(_originLaby);
+      _laby[pos.y][pos.x] = '#';
+
+      List<(int x, int y, int dir)> visited = new List<(int x, int y, int dir)>();
+      while (Move(ref currentPos))
+      {
+        if (visited.Contains(currentPos))
+        {
+          _obstructions.Add((pos.x, pos.y));
+          return true;
+        }
+        visited.Add(currentPos);
+      }
+      return false;
     }
 
-    private Boolean Move()
+    private Boolean Move(ref (int x, int y, int dir) _pos)
     {
       switch (_pos.dir)
       {
         case 0:
-          return MoveUp();
+          return MoveUp(ref _pos);
         case 1:
-          return MoveRight();
+          return MoveRight(ref _pos);
         case 2:
-          return MoveDown();
+          return MoveDown(ref _pos);
         case 3:
-          return MoveLeft();
+          return MoveLeft(ref _pos);
         default:
           return false;
       }
     }
 
-    private Boolean MoveUp()
+    private Boolean MoveUp(ref (int x, int y, int dir) _pos)
     {
       if (_pos.y == 0) return false;
       if (_laby[_pos.y - 1][_pos.x] == '#')
       {
-        TurnRight();
+        TurnRight(ref _pos);
       }
       else
       {
@@ -79,12 +105,12 @@ namespace AdventOfCode
       return true;
     }
 
-    private Boolean MoveRight()
+    private Boolean MoveRight(ref (int x, int y, int dir) _pos)
     {
       if (_pos.x == _laby[0].Length - 1) return false;
       if (_laby[_pos.y][_pos.x + 1] == '#')
       {
-        TurnRight();
+        TurnRight(ref _pos);
       }
       else
       {
@@ -94,12 +120,12 @@ namespace AdventOfCode
       return true;
     }
 
-    private Boolean MoveDown()
+    private Boolean MoveDown(ref (int x, int y, int dir) _pos)
     {
       if (_pos.y == _laby.Length - 1) return false;
       if (_laby[_pos.y + 1][_pos.x] == '#')
       {
-        TurnRight();
+        TurnRight(ref _pos);
       }
       else
       {
@@ -109,12 +135,12 @@ namespace AdventOfCode
       return true;
     }
 
-    private Boolean MoveLeft()
+    private Boolean MoveLeft(ref (int x, int y, int dir) _pos)
     {
       if (_pos.x == 0) return false;
       if (_laby[_pos.y][_pos.x - 1] == '#')
       {
-        TurnRight();
+        TurnRight(ref _pos);
       }
       else
       {
@@ -124,24 +150,37 @@ namespace AdventOfCode
       return true;
     }
 
-    private void TurnRight()
+    private void TurnRight(ref (int x, int y, int dir) _pos)
     {
       _pos.dir = (_pos.dir + 1) % 4;
     }
 
     private void ParseInput(string[] input)
     {
-      _laby = new char[input.Length][];
       foreach (var (value, y) in input.Select((value, i) => (value, i)))
       {
         _laby[y] = value.ToCharArray();
         int x = Array.FindIndex(_laby[y], x => x == '^');
         if (x != -1)
         {
-          _pos = (x, y, 0);
+          _originalPos = (x, y, 0);
         }
       }
     }
 
+    private char[][] CloneLaby(char[][] laby)
+    {
+      char[][] clone = new char[laby.Length][];
+      for (int y = 0; y < laby.Length; y++)
+      {
+        clone[y] = new char[laby[y].Length];
+        for (int x = 0; x < laby[y].Length; x++)
+        {
+          clone[y][x] = laby[y][x];
+        }
+      }
+      return clone;
+    }
   }
+
 }
