@@ -12,7 +12,6 @@ namespace AdventOfCode
     {
       _input = File.ReadAllLines("input/day_07/input-ex7.txt");
       _list = new List<(long, List<long>)>();
-      _operandes = new List<string> { "+", "*" };
       ParseInput(_input);
 
       Console.WriteLine("Résultat de la partie 1 : " + PartOne());
@@ -22,6 +21,7 @@ namespace AdventOfCode
     private long PartOne()
     {
       long result = 0;
+      _operandes = new List<string> { "+", "*" };
 
       foreach (var (key, value) in _list)
       {
@@ -54,6 +54,37 @@ namespace AdventOfCode
     private long PartTwo()
     {
       long result = 0;
+      _operandes = new List<string> { "+", "*", "|" };
+
+      foreach (var (key, value) in _list)
+      {
+        List<List<String>> listOperations = GetPermutationsWithRept(value.Count - 1, _operandes).Select(e => e.ToList()).ToList();
+        foreach (List<String> operations in listOperations)
+        {
+          long currentResult = value[0];
+          for (int i = 0; i < value.Count - 1; i++)
+          {
+            if (operations[i] == "+")
+            {
+              currentResult += value[i + 1];
+            }
+            else if (operations[i] == "*")
+            {
+              currentResult *= value[i + 1];
+            }
+            else if (operations[i] == "|")
+            {
+              currentResult = Int64.Parse(String.Concat(currentResult.ToString(), value[i + 1].ToString()));
+            }
+            if (currentResult >= key) break;
+          }
+          if (currentResult == key)
+          {
+            result += key;
+            break;
+          }
+        }
+      }
 
       return result;
     }
