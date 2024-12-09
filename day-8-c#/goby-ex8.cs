@@ -23,23 +23,7 @@ namespace AdventOfCode
     private int PartOne()
     {
       HashSet<(int, int)> antinodes = new HashSet<(int x, int y)>();
-
-      Dictionary<char, List<(int, int)>> antennas = new Dictionary<char, List<(int x, int y)>>();
-
-      for (int y = 0; y < _map.Length; y++)
-      {
-        for (int x = 0; x < _map[y].Length; x++)
-        {
-          if (_map[y][x] != '.')
-          {
-            if (!antennas.ContainsKey(_map[y][x]))
-            {
-              antennas[_map[y][x]] = new List<(int x, int y)>();
-            }
-            antennas[_map[y][x]].Add((x, y));
-          }
-        }
-      }
+      Dictionary<char, List<(int, int)>> antennas = findAntennas(_map);
 
       foreach (var (key, value) in antennas)
       {
@@ -71,9 +55,40 @@ namespace AdventOfCode
 
     private int PartTwo()
     {
-      int result = 0;
+      HashSet<(int, int)> antinodes = new HashSet<(int x, int y)>();
+      Dictionary<char, List<(int, int)>> antennas = findAntennas(_map);
 
-      return result;
+      foreach (var (key, value) in antennas)
+      {
+        GetPermutations(2, value).ToList().ForEach(e =>
+        {
+          int x1 = e.ElementAt(0).Item1; int y1 = e.ElementAt(0).Item2;
+          int x2 = e.ElementAt(1).Item1; int y2 = e.ElementAt(1).Item2;
+          int xDiff = x2 - x1;
+          int yDiff = y2 - y1;
+
+          int xA = x1 - xDiff; int yA = y1 - yDiff;
+          while (xA >= 0 && xA < _maxX && yA >= 0 && yA < _maxY)
+          {
+            antinodes.Add((xA, yA));
+            xA -= xDiff;
+            yA -= yDiff;
+          }
+
+          int xB = x2 + xDiff; int yB = y2 + yDiff;
+          while (xB >= 0 && xB < _maxX && yB >= 0 && yB < _maxY)
+          {
+            antinodes.Add((xB, yB));
+            xB += xDiff;
+            yB += yDiff;
+          }
+
+          antinodes.Add((x1, y1));
+          antinodes.Add((x2, y2));
+        });
+      }
+
+      return antinodes.Count;
     }
 
     private IEnumerable<IEnumerable<T>> GetPermutations<T>(long length, IEnumerable<T> list)
@@ -92,5 +107,24 @@ namespace AdventOfCode
       }
     }
 
+    private Dictionary<char, List<(int, int)>> findAntennas(char[][] map)
+    {
+      Dictionary<char, List<(int, int)>> antennas = new Dictionary<char, List<(int, int)>>();
+      for (int y = 0; y < map.Length; y++)
+      {
+        for (int x = 0; x < map[y].Length; x++)
+        {
+          if (map[y][x] != '.')
+          {
+            if (!antennas.ContainsKey(map[y][x]))
+            {
+              antennas[map[y][x]] = new List<(int x, int y)>();
+            }
+            antennas[map[y][x]].Add((x, y));
+          }
+        }
+      }
+      return antennas;
+    }
   }
 }
