@@ -6,37 +6,28 @@ namespace AdventOfCode
   class Day_09
   {
     private readonly char[] _input;
-    private int[] _fs;
     public Day_09()
     {
       _input = File.ReadAllText("input/day_09/input-ex9.txt").ToCharArray();
-      _fs = ParseInput(_input);
-
       Console.WriteLine("Résultat de la partie 1 : " + PartOne());
       Console.WriteLine("Résultat de la partie 2 : " + PartTwo());
     }
 
     private long PartOne()
     {
-      long result = 0;
-
-      int[] compressedValues = Compress(_fs);
-
-      for (int i = 0; i < compressedValues.Length; i++)
-      {
-        result += i * compressedValues[i];
-      }
-
-      return result;
+      int[] fs = ParseInputArray(_input);
+      int[] compressedValues = CompressByte(fs);
+      return Checksum(compressedValues);
     }
 
-    private int PartTwo()
+    private long PartTwo()
     {
-      int result = 0;
-
-      return result;
+      List<(int val, int size)> fs = ParseInputList(_input);
+      ListToString(fs);
+      int[] compressedValues = CompressFile(fs);
+      return Checksum(compressedValues);
     }
-    private int[] ParseInput(char[] input)
+    private int[] ParseInputArray(char[] input)
     {
       List<int> fs = new List<int>();
       int id = 0;
@@ -60,7 +51,35 @@ namespace AdventOfCode
       return fs.ToArray();
     }
 
-    private int[] Compress(int[] fs)
+    private List<(int val, int size)> ParseInputList(char[] input)
+    {
+      List<(int val, int size)> fs = new List<(int, int)>();
+      int id = 0;
+      for (int i = 0; i < input.Length; i++)
+      {
+        int size = Int32.Parse(input[i].ToString());
+        int value = -1;
+        if (i % 2 == 0)
+        {
+          value = id;
+          id++;
+        }
+        fs.Add((value, size));
+      }
+      return fs;
+    }
+
+    private long Checksum(int[] values)
+    {
+      long result = 0;
+      for (int i = 0; i < values.Length; i++)
+      {
+        result += values[i] != -1 ? i * values[i] : 0;
+      }
+      return result;
+    }
+
+    private int[] CompressByte(int[] fs)
     {
       int lastValueIndex = fs.Count() - 1;
       for (int i = 0; i != lastValueIndex; i++)
@@ -85,10 +104,45 @@ namespace AdventOfCode
         Console.WriteLine("Erreur : impossible de compresser le fichier");
         return new int[0];
       }
-
-
     }
 
+    private int[] CompressFile(List<(int val, int size)> fs)
+    {
+      for (int i = fs.Count - 1; i > 0; i--)
+      {
+        if (fs[i].val == -1) continue;
+        int index = fs.GetRange(0, i).FindIndex(x => x.val == -1 && x.size >= fs[i].size);
+        if (index != -1)
+        {
+          int space = fs[index].size - fs[i].size;
+          if (space > 0) fs[index] = (-1, fs[i].size);
+          (fs[i], fs[index]) = (fs[index], fs[i]);
+          if (space > 0) fs.Insert(index + 1, (-1, space));
+        }
+      }
+
+      List<int> result = new List<int>();
+      foreach ((int val, int size) f in fs)
+      {
+        result.AddRange(Enumerable.Repeat(f.val, f.size));
+      }
+      return result.ToArray();
+    }
+
+    public string ArrayToString(int[] array)
+    {
+      return string.Join("", array.Select(x => x == -1 ? "." : x.ToString()));
+    }
+
+    public string ListToString(List<(int val, int size)> fs)
+    {
+      List<int> intList = new List<int>();
+      foreach ((int val, int size) f in fs)
+      {
+        intList.AddRange(Enumerable.Repeat(f.val, f.size));
+      }
+      return ArrayToString(intList.ToArray());
+    }
 
   }
 }
