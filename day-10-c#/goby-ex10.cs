@@ -76,9 +76,7 @@ namespace AdventOfCode
 
     private int PartTwo()
     {
-      int result = 0;
-
-      return result;
+      return _hikingPaths.Count;
     }
 
     private List<List<Byte>> GetAllPaths()
