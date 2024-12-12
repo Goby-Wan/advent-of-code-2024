@@ -39,6 +39,11 @@ namespace AdventOfCode
     {
       int result = 0;
 
+      foreach (var region in _regions)
+      {
+        result += CalcSides(region.Key) * region.Value.Count;
+      }
+
       return result;
     }
 
@@ -94,6 +99,60 @@ namespace AdventOfCode
       return result;
     }
 
+    private int CalcSides(int id)
+    {
+      int maxX = 0;
+      int maxY = 0;
+      List<(int x, int y)> corners = new List<(int x, int y)>();
+      List<(int x, int y)> plots = new List<(int x, int y)>();
+
+      foreach (var plot in _regions[id])
+      {
+        plots.Add((2 * plot.x + 1, 2 * plot.y + 1));
+        if (2 * plot.x + 1 > maxX) maxX = 2 * plot.x + 1;
+        if (2 * plot.y + 1 > maxY) maxY = 2 * plot.y + 1;
+      };
+
+      foreach (var plot in plots)
+      {
+        bool plotN = plot.y - 2 >= 0 && plots.Contains((plot.x, plot.y - 2));
+        bool plotE = plot.x + 2 <= maxX && plots.Contains((plot.x + 2, plot.y));
+        bool plotS = plot.y + 2 <= maxY && plots.Contains((plot.x, plot.y + 2));
+        bool plotW = plot.x - 2 >= 0 && plots.Contains((plot.x - 2, plot.y));
+        bool plotNW = plot.y - 2 >= 0 && plot.x - 2 >= 0 && plots.Contains((plot.x - 2, plot.y - 2));
+        bool plotNE = plot.y - 2 >= 0 && plot.x + 2 <= maxX && plots.Contains((plot.x + 2, plot.y - 2));
+        bool plotSE = plot.y + 2 <= maxY && plot.x + 2 <= maxX && plots.Contains((plot.x + 2, plot.y + 2));
+        bool plotSW = plot.y + 2 <= maxY && plot.x - 2 >= 0 && plots.Contains((plot.x - 2, plot.y + 2));
+
+        // Coin Nord-Ouest
+        if (!corners.Contains((plot.x - 1, plot.y - 1)))
+        {
+          if (!plotN && !plotW || plotNW && !plotN || plotNW && !plotW || !plotNW && plotN && plotW) corners.Add((plot.x - 1, plot.y - 1));
+          if (plotNW && !plotN && !plotW) corners.Add((plot.x - 1, plot.y - 1));
+        }
+        // Coin Nord-Est
+        if (!corners.Contains((plot.x + 1, plot.y - 1)))
+        {
+          if (!plotN && !plotE || plotNE && !plotN || plotNE && !plotE || !plotNE && plotN && plotE) corners.Add((plot.x + 1, plot.y - 1));
+          if (plotNE && !plotN && !plotE) corners.Add((plot.x + 1, plot.y - 1));
+        }
+        // Coin Sud-Est
+        if (!corners.Contains((plot.x + 1, plot.y + 1)))
+        {
+          if (!plotS && !plotE || plotSE && !plotS || plotSE && !plotE || !plotSE && plotS && plotE) corners.Add((plot.x + 1, plot.y + 1));
+          if (plotSE && !plotS && !plotE) corners.Add((plot.x + 1, plot.y + 1));
+        }
+        // Coin Sud-Ouest
+        if (!corners.Contains((plot.x - 1, plot.y + 1)))
+        {
+          if (!plotS && !plotW || plotSW && !plotS || plotSW && !plotW || !plotSW && plotS && plotW) corners.Add((plot.x - 1, plot.y + 1));
+          if (plotSW && !plotS && !plotW) corners.Add((plot.x - 1, plot.y + 1));
+        }
+      }
+
+      return corners.Count;
+    }
+
     private void ParseInput(string[] input)
     {
       foreach (var (value, i) in input.Select((value, i) => (value, i)))
@@ -103,7 +162,5 @@ namespace AdventOfCode
     }
 
   }
-
-
 
 }
