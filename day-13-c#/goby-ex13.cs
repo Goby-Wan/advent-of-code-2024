@@ -17,13 +17,14 @@ namespace AdventOfCode
       Console.WriteLine("Résultat de la partie 2 : " + PartTwo());
     }
 
-    private int PartOne()
+    private long PartOne(int maxTries = 100)
     {
-      int result = 0;
+      long result = 0;
       foreach (double[,] equation in _equations)
       {
-        (int x, int y) = SolveEquation(equation);
-        if (x >= 0 && y >= 0 && x <= 100 && y <= 100)
+        (long x, long y) = SolveEquation(equation);
+        bool moreThanMax = maxTries != -1 ? x <= maxTries && y <= maxTries : true;
+        if (x >= 0 && y >= 0 && moreThanMax)
         {
           result += 3 * x + y;
         }
@@ -32,14 +33,19 @@ namespace AdventOfCode
       return result;
     }
 
-    private int PartTwo()
+    private long PartTwo()
     {
-      int result = 0;
+      foreach (double[,] equation in _equations)
+      {
+        equation[2, 0] += 10000000000000;
+        equation[2, 1] += 10000000000000;
+      }
 
-      return result;
+
+      return PartOne(-1);
     }
 
-    private (int x, int y) SolveEquation(double[,] equation)
+    private (long x, long y) SolveEquation(double[,] equation)
     {
       double delta = equation[0, 0] * equation[1, 1] - equation[0, 1] * equation[1, 0];
       if (delta == 0)
@@ -51,7 +57,7 @@ namespace AdventOfCode
         double x = (equation[2, 0] * equation[1, 1] - equation[2, 1] * equation[1, 0]) / delta;
         double y = (equation[0, 0] * equation[2, 1] - equation[0, 1] * equation[2, 0]) / delta;
 
-        return Double.IsInteger(x) && Double.IsInteger(y) ? ((int)x, (int)y) : (-1, -1);
+        return Double.IsInteger(x) && Double.IsInteger(y) ? ((long)x, (long)y) : (-1, -1);
       }
     }
 
